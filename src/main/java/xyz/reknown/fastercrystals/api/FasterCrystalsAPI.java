@@ -24,11 +24,9 @@ import xyz.reknown.fastercrystals.FasterCrystals;
 public class FasterCrystalsAPI {
     private static FasterCrystalsAPI instance;
 
-    private final FasterCrystals plugin;
     private FasterCrystalsStateProvider stateProvider;
 
     private FasterCrystalsAPI(FasterCrystals plugin) {
-        this.plugin = plugin;
         this.stateProvider = new DefaultStateProvider();
     }
 
@@ -58,6 +56,9 @@ public class FasterCrystalsAPI {
     }
 
     /**
+     * Sets a custom state provider for managing player toggle states.
+     * This allows external plugins to control how states are stored.
+     *
      * @param provider the custom state provider
      * @throws IllegalArgumentException if provider is null
      */
@@ -69,6 +70,8 @@ public class FasterCrystalsAPI {
     }
 
     /**
+     * Gets the current state provider.
+     *
      * @return the current state provider
      */
     @NotNull

@@ -53,7 +53,8 @@ public class FasterCrystals extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        FasterCrystalsAPI.init(this);
+        FasterCrystalsAPI.init(this); //omg :fire:
+
         saveDefaultConfig();
 
         this.crystalIds = FoliaScheduler.isFolia() ? new ConcurrentHashMap<>() : new HashMap<>();
@@ -85,6 +86,9 @@ public class FasterCrystals extends JavaPlugin {
 
         int pluginId = 22397;
         new Metrics(this, pluginId);
+
+        getLogger().info("FasterCrystals enabled with " +
+                FasterCrystalsAPI.getInstance().getStateProvider().getClass().getSimpleName());
     }
 
     @Override
