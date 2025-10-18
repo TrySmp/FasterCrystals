@@ -52,8 +52,6 @@ public class FasterCrystals extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-
         getServer().getPluginManager().registerEvents(new EntityRemoveFromWorldListener(this), this);
         getServer().getPluginManager().registerEvents(new EntitySpawnListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldUnloadListener(this), this);
