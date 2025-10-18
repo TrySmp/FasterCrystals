@@ -34,7 +34,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import xyz.reknown.fastercrystals.FasterCrystals;
-import xyz.reknown.fastercrystals.api.FasterCrystalsAPI;
 import xyz.reknown.fastercrystals.enums.AnimPackets;
 
 @RequiredArgsConstructor
@@ -49,7 +48,7 @@ public class AnimationListener extends SimplePacketListenerAbstract {
 
         if (player.getGameMode() == GameMode.SPECTATOR) return;
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return; // ignore weakness hits, tool hits are slow anyway
-        if (!(FasterCrystalsAPI.getInstance().isFastCrystalsEnabled(player))) return;
+        if (!(plugin.isEnabled(player))) return;
 
         AnimPackets lastPacket = plugin.getLastPacket().get(player.getUniqueId());
         Location eyeLoc = player.getEyeLocation();

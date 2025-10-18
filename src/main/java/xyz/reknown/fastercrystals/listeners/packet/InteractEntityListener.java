@@ -29,20 +29,24 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import xyz.reknown.fastercrystals.FasterCrystals;
-import xyz.reknown.fastercrystals.api.FasterCrystalsAPI;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @RequiredArgsConstructor
 public class InteractEntityListener extends SimplePacketListenerAbstract {
 
     private final FasterCrystals plugin;
+
     private final Set<Material> ALLOWED_BLOCKS = Set.of(Material.OBSIDIAN, Material.BEDROCK);
+    private final Set<Material> AIR_TYPES = Set.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR);
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
@@ -53,7 +57,7 @@ public class InteractEntityListener extends SimplePacketListenerAbstract {
 
         Player player = event.getPlayer();
         if (player.getGameMode() == GameMode.SPECTATOR) return;
-        if (!(FasterCrystalsAPI.getInstance().isFastCrystalsEnabled(player))) return;
+        if (!(plugin.isEnabled(player))) return;
 
         ItemStack item;
         if (wrapper.getHand() == InteractionHand.MAIN_HAND) {
@@ -76,8 +80,24 @@ public class InteractEntityListener extends SimplePacketListenerAbstract {
             if (result == null || !ALLOWED_BLOCKS.contains(result.getHitBlock().getType())) return;
             if (!result.getHitBlock().getLocation().equals(blockLoc)) return;
 
-            plugin.spawnCrystal(entity.getLocation(), player, item);
+            spawnCrystal(entity.getLocation(), player, item);
         });
+    }
+
+    private void spawnCrystal(Location loc, Player player, ItemStack item) {
+        Location clonedLoc = loc.clone().subtract(0.5, 0.0, 0.5);
+        if (!(AIR_TYPES.contains(clonedLoc.getBlock().getType()))) return;
+
+        clonedLoc.add(0.5, 1.0, 0.5);
+        List<Entity> nearbyEntities = new ArrayList<>(clonedLoc.getWorld().getNearbyEntities(clonedLoc, 0.5, 1, 0.5, entity -> !(entity instanceof Player p) || p.getGameMode() != GameMode.SPECTATOR));
+
+        if (nearbyEntities.isEmpty()) {
+            loc.getWorld().spawn(clonedLoc.subtract(0.0, 1.0, 0.0), EnderCrystal.class, entity -> entity.setShowingBottom(false));
+
+            if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR) {
+                item.setAmount(item.getAmount() - 1);
+            }
+        }
     }
 
 }
