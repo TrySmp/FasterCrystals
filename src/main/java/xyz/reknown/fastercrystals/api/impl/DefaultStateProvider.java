@@ -1,13 +1,15 @@
-package xyz.reknown.fastercrystals.api;
+package xyz.reknown.fastercrystals.api.impl;
 
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import xyz.reknown.fastercrystals.api.FasterCrystalsStateProvider;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultStateProvider implements FasterCrystalsStateProvider {
+
     private final Map<UUID, Boolean> playerStates = new ConcurrentHashMap<>();
 
     @Override
@@ -23,4 +25,5 @@ public class DefaultStateProvider implements FasterCrystalsStateProvider {
             playerStates.remove(player.getUniqueId());
         }
     }
+
 }

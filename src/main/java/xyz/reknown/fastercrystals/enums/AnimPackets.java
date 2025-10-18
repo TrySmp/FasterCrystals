@@ -18,6 +18,7 @@
 package xyz.reknown.fastercrystals.enums;
 
 public enum AnimPackets {
+
     ANIMATION,
     START_DIGGING,
     ATTACK,
@@ -25,4 +26,5 @@ public enum AnimPackets {
     CREATIVE_INV_ACTION,
     IGNORE,
     MISC
+
 }

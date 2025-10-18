@@ -26,4 +26,5 @@ public interface FasterCrystalsStateProvider {
         setState(player, newState);
         return newState;
     }
+
 }

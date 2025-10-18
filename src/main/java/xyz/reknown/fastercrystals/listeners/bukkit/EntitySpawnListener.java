@@ -17,20 +17,23 @@
 
 package xyz.reknown.fastercrystals.listeners.bukkit;
 
+import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import xyz.reknown.fastercrystals.FasterCrystals;
 
+@RequiredArgsConstructor
 public class EntitySpawnListener implements Listener {
+
+    private final FasterCrystals plugin;
+
     @EventHandler
     public void onEntitySpawn(EntitySpawnEvent event) {
-        if (event.getEntityType() == EntityType.END_CRYSTAL) {
-            FasterCrystals plugin = JavaPlugin.getPlugin(FasterCrystals.class);
-            plugin.getCrystalIds().put(event.getEntity().getEntityId(), (EnderCrystal) event.getEntity());
-        }
+        if (event.getEntityType() != EntityType.END_CRYSTAL) return;
+        plugin.getCrystalIds().put(event.getEntity().getEntityId(), (EnderCrystal) event.getEntity());
     }
+
 }

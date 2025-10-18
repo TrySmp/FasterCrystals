@@ -21,6 +21,7 @@ import com.github.retrooper.packetevents.event.SimplePacketListenerAbstract;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -29,34 +30,33 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import xyz.reknown.fastercrystals.FasterCrystals;
+import xyz.reknown.fastercrystals.api.FasterCrystalsAPI;
 import xyz.reknown.fastercrystals.enums.AnimPackets;
-import xyz.reknown.fastercrystals.user.User;
 
+@RequiredArgsConstructor
 public class AnimationListener extends SimplePacketListenerAbstract {
+
+    private final FasterCrystals plugin;
+
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
+        Player player = event.getPlayer();
         if (event.getPacketType() != PacketType.Play.Client.ANIMATION) return;
 
-        FasterCrystals plugin = JavaPlugin.getPlugin(FasterCrystals.class);
-        Player player = event.getPlayer();
-        if (player == null) return;
-
-        User user = plugin.getUsers().get(player);
         if (player.getGameMode() == GameMode.SPECTATOR) return;
         if (player.hasPotionEffect(PotionEffectType.WEAKNESS)) return; // ignore weakness hits, tool hits are slow anyway
-        if (user == null || !user.isFasterCrystals()) return;
+        if (!(FasterCrystalsAPI.getInstance().isFastCrystalsEnabled(player))) return;
 
-        AnimPackets lastPacket = user.getLastPacket();
+        AnimPackets lastPacket = plugin.getLastPacket().get(player.getUniqueId());
         Location eyeLoc = player.getEyeLocation();
         Vector direction = eyeLoc.getDirection();
         FoliaScheduler.getRegionScheduler().run(plugin, eyeLoc, task -> {
             if (lastPacket == AnimPackets.IGNORE) return; // animation is for hotbar drop item/placement/use item
-            if (user.isIgnoreAnim()) return; // animation is for inventory drop item
+            if (plugin.getIgnoreAnim().getOrDefault(player.getUniqueId(), false)) return; // animation is for inventory drop item
 
             // Ensure the player did not move too far (specifically, to another Folia region)
             // Otherwise, the below will throw an exception for attempting to raytrace from a different thread
@@ -114,4 +114,5 @@ public class AnimationListener extends SimplePacketListenerAbstract {
             player.attack(entity);
         });
     }
+
 }

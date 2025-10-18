@@ -26,38 +26,33 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import xyz.reknown.fastercrystals.FasterCrystals;
 import xyz.reknown.fastercrystals.enums.AnimPackets;
-import xyz.reknown.fastercrystals.user.User;
 
 public class LastPacketListener extends SimplePacketListenerAbstract {
-    public LastPacketListener() {
-        // Ensure AnimationListener runs first, see below
+
+    private final FasterCrystals plugin;
+
+    public LastPacketListener(FasterCrystals plugin) {
         super(PacketListenerPriority.MONITOR);
+        this.plugin = plugin;
     }
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
-        FasterCrystals plugin = JavaPlugin.getPlugin(FasterCrystals.class);
         Player player = event.getPlayer();
-        if (player == null) return;
-
-        User user = plugin.getUsers().get(player);
-        if (user == null) return;
-
         AnimPackets animPacket = getAnimPacket(event);
 
         // Dropping order is ANIMATION -> WINDOW_CLICK (unlike other actions where ANIMATION is last)
         // So, need to ensure ANIMATION is not processed in the *main thread* if the following packet is inv dropping
         // Even if this is MONITOR priority, it will run before the main thread task in AnimationListener
-        if (user.getLastPacket() == AnimPackets.ANIMATION) {
+        if (plugin.getLastPacket().get(player.getUniqueId()) == AnimPackets.ANIMATION) {
             // Ignore anim if the following packet is inventory dropping or a creative action
-            user.setIgnoreAnim(animPacket == AnimPackets.INV_DROP || animPacket == AnimPackets.CREATIVE_INV_ACTION);
+            plugin.getIgnoreAnim().put(player.getUniqueId(), animPacket == AnimPackets.INV_DROP || animPacket == AnimPackets.CREATIVE_INV_ACTION);
         }
 
         // Still required for other actions (e.g. dropping without inventory)
-        user.setLastPacket(animPacket);
+        plugin.getLastPacket().put(player.getUniqueId(), animPacket);
     }
 
     private AnimPackets getAnimPacket(PacketPlayReceiveEvent event) {
@@ -65,8 +60,7 @@ public class LastPacketListener extends SimplePacketListenerAbstract {
             return AnimPackets.ANIMATION;
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             WrapperPlayClientPlayerDigging wrapper = new WrapperPlayClientPlayerDigging(event);
-            if (wrapper.getAction() == DiggingAction.DROP_ITEM
-                    || wrapper.getAction() == DiggingAction.DROP_ITEM_STACK) {
+            if (wrapper.getAction() == DiggingAction.DROP_ITEM || wrapper.getAction() == DiggingAction.DROP_ITEM_STACK) {
                 return AnimPackets.IGNORE;
             } else if (wrapper.getAction() == DiggingAction.START_DIGGING) {
                 return AnimPackets.START_DIGGING;
@@ -74,15 +68,12 @@ public class LastPacketListener extends SimplePacketListenerAbstract {
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
             // drop item w/ Q OR clicks outside inventory
-            if (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.THROW ||
-                    (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP
-                            && wrapper.getSlot() == -999)) {
+            if (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.THROW || (wrapper.getWindowClickType() == WrapperPlayClientClickWindow.WindowClickType.PICKUP && wrapper.getSlot() == -999)) {
                 return AnimPackets.INV_DROP;
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
             return AnimPackets.CREATIVE_INV_ACTION;
-        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT
-                || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
+        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT || event.getPacketType() == PacketType.Play.Client.USE_ITEM) {
             return AnimPackets.IGNORE;
         } else if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
@@ -93,4 +84,5 @@ public class LastPacketListener extends SimplePacketListenerAbstract {
 
         return AnimPackets.MISC;
     }
+
 }

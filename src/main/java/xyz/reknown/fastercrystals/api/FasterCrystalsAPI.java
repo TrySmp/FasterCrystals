@@ -17,72 +17,29 @@
 
 package xyz.reknown.fastercrystals.api;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import xyz.reknown.fastercrystals.FasterCrystals;
+import xyz.reknown.fastercrystals.api.impl.DefaultStateProvider;
 
 public class FasterCrystalsAPI {
+
+    @Getter
     private static FasterCrystalsAPI instance;
 
-    private FasterCrystalsStateProvider stateProvider;
+    @Setter
+    @Getter
+    private FasterCrystalsStateProvider stateProvider = new DefaultStateProvider();
 
-    private FasterCrystalsAPI(FasterCrystals plugin) {
-        this.stateProvider = new DefaultStateProvider();
-    }
-
-    /**
-     * Initializes the API. Must be called once during plugin enable.
-     *
-     * @param plugin the FasterCrystals plugin instance
-     */
-    public static void init(FasterCrystals plugin) {
-        if (instance != null) {
-            throw new IllegalStateException("FasterCrystalsAPI is already initialized.");
-        }
-        instance = new FasterCrystalsAPI(plugin);
-    }
-
-    /**
-     * Gets the singleton instance of the API.
-     *
-     * @return the API instance
-     * @throws IllegalStateException if not initialised yet
-     */
-    public static FasterCrystalsAPI getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("FasterCrystalsAPI has not been initialized yet.");
-        }
-        return instance;
-    }
-
-    /**
-     * Sets a custom state provider for managing player toggle states.
-     * This allows external plugins to control how states are stored.
-     *
-     * @param provider the custom state provider
-     * @throws IllegalArgumentException if provider is null
-     */
-    public void setStateProvider(@NotNull FasterCrystalsStateProvider provider) {
-        if (provider == null) {
-            throw new IllegalArgumentException("StateProvider cannot be null");
-        }
-        this.stateProvider = provider;
-    }
-
-    /**
-     * Gets the current state provider.
-     *
-     * @return the current state provider
-     */
-    @NotNull
-    public FasterCrystalsStateProvider getStateProvider() {
-        return stateProvider;
+    public FasterCrystalsAPI() {
+        FasterCrystalsAPI.instance = new FasterCrystalsAPI();
     }
 
     /**
      * Sets the FasterCrystals toggle state for a specific player.
      *
-     * @param player  the player whose toggle state will be updated
+     * @param player the player whose toggle state will be updated
      * @param enabled true to enable fast crystals, false to disable
      */
     public void setFastCrystals(@NotNull Player player, boolean enabled) {
@@ -109,4 +66,5 @@ public class FasterCrystalsAPI {
     public boolean toggleFastCrystals(@NotNull Player player) {
         return stateProvider.toggleState(player);
     }
+
 }

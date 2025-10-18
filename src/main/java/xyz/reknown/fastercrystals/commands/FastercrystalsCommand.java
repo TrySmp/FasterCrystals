@@ -32,16 +32,20 @@ import xyz.reknown.fastercrystals.FasterCrystals;
 import xyz.reknown.fastercrystals.api.FasterCrystalsAPI;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-public class FastercrystalsCommand implements CommandExecutor, TabCompleter {
+public class FasterCrystalsCommand implements CommandExecutor, TabCompleter {
+
     private static final Set<String> ON_STRINGS = Set.of("true", "on");
     private static final Set<String> OFF_STRINGS = Set.of("false", "off");
 
     private final FasterCrystals plugin;
 
-    public FastercrystalsCommand(FasterCrystals plugin) {
+    public FasterCrystalsCommand(FasterCrystals plugin, String name) {
         this.plugin = plugin;
+        Objects.requireNonNull(plugin.getCommand(name)).setExecutor(this);
+        Objects.requireNonNull(plugin.getCommand(name)).setTabCompleter(this);
     }
 
     @Override
@@ -105,4 +109,5 @@ public class FastercrystalsCommand implements CommandExecutor, TabCompleter {
         }
         return List.of();
     }
+
 }
